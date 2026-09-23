@@ -1,0 +1,6 @@
+id: clinic-guide-assistant
+name: 康和门诊·AI 导诊助手
+version: 1.0.0-SNAPSHOT
+runtimeType: JAVA_NATIVE
+entrypoint: cn.xiaofuge.clinic.plugin.ClinicPlugin
+description: 在线问诊导诊：症状推科室、排班查询、预约挂号、预约查询与病历摘要。仅导诊不诊断。

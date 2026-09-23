@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>康和门诊 · 在线导诊预约</title>
+<style>
+:root {
+  /* 医疗健康设计语言：薄荷绿 #2fa48d / 云白蓝，云白留白 + 柔光晕，极大圆角无锐角 */
+  --bg: #eef6f3;
+  --card: #ffffff;
+  --ink: #173229;
+  --muted: #7f938c;
+  --primary: #2fa48d;
+  --primary-deep: #1d7a68;
+  --primary-soft: #ddf2ec;
+  --blue-soft: #e8f1fa;
+  --blue: #4a7fb5;
+  --red: #c96a5a;
+  --line: rgba(23, 50, 41, .10);
+  --shadow: 0 18px 44px rgba(23, 50, 41, .09);
+  --r: 28px; --r-sm: 16px; --r-pill: 999px;
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --num: "Georgia", "Times New Roman", serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); min-height: 100vh; }
+.page-bg {
+  position: fixed; z-index: -2; inset: 0;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(47,164,141,.14) 0, transparent 34%),
+    radial-gradient(circle at 90% 18%, rgba(74,127,181,.10) 0, transparent 30%),
+    radial-gradient(circle at 70% 90%, rgba(47,164,141,.10) 0, transparent 36%),
+    linear-gradient(180deg, #f4faf8, var(--bg));
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 24px 20px 110px; }
+
+header.top { display: flex; align-items: center; justify-content: space-between; padding: 14px 6px 20px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand .logo {
+  width: 44px; height: 44px; border-radius: 16px; background: linear-gradient(135deg, var(--primary), #56c2ab);
+  display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px;
+  box-shadow: 0 8px 20px rgba(47,164,141,.35);
+}
+.brand h1 { font-size: 21px; letter-spacing: 2px; }
+.brand .en { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+.disclaimer-pill {
+  font-size: 12px; color: var(--primary-deep); background: var(--primary-soft);
+  border-radius: var(--r-pill); padding: 7px 16px; display: flex; align-items: center; gap: 6px;
+}
+
+/* 免责声明横幅 */
+.notice {
+  background: linear-gradient(135deg, #fdf6ec, #fff); border: 1px solid rgba(201,150,74,.25);
+  border-radius: var(--r); padding: 14px 20px; font-size: 13px; line-height: 1.7; color: #8a6a34;
+  margin-bottom: 20px; display: flex; gap: 10px; align-items: flex-start;
+}
+.notice b { flex: none; }
+
+/* 科室导航 */
+.dept-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 22px; }
+.dept-card {
+  background: var(--card); border-radius: var(--r); padding: 18px 14px; text-align: center;
+  cursor: pointer; border: 1.5px solid transparent; transition: all .18s; box-shadow: 0 6px 18px rgba(23,50,41,.05);
+}
+.dept-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.dept-card.on { border-color: var(--primary); background: var(--primary-soft); }
+.dept-card .ico { font-size: 26px; margin-bottom: 8px; }
+.dept-card .nm { font-size: 14px; font-weight: 600; }
+.dept-card .fl { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* 医生卡片 */
+.sec-title { font-size: 15px; letter-spacing: 2px; margin: 4px 4px 14px; display: flex; align-items: baseline; gap: 10px; }
+.sec-title small { color: var(--muted); font-weight: 400; letter-spacing: 1px; font-size: 12px; }
+.doc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 26px; }
+.doc-card {
+  background: var(--card); border-radius: var(--r); padding: 20px; position: relative; overflow: hidden;
+  box-shadow: 0 8px 22px rgba(23,50,41,.06); transition: transform .15s, box-shadow .15s; border: 1.5px solid transparent;
+}
+.doc-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.doc-card.on { border-color: var(--primary); }
+.doc-card::before { /* 柔光晕 */
+  content: ""; position: absolute; right: -26px; top: -26px; width: 96px; height: 96px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(47,164,141,.14), transparent 70%);
+}
+.doc-card .avatar {
+  width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-soft), var(--blue-soft));
+  display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px;
+  border: 2px solid #fff; box-shadow: 0 4px 12px rgba(47,164,141,.18);
+}
+.doc-card h3 { font-size: 16px; }
+.doc-card .meta { font-size: 12px; color: var(--muted); margin: 6px 0 10px; line-height: 1.7; }
+.doc-card .fee { font-family: var(--num); font-size: 15px; color: var(--primary-deep); font-weight: 700; }
+.doc-card .fee small { font-size: 11px; color: var(--muted); font-weight: 400; }
+.doc-card .avail { font-size: 11px; color: var(--primary-deep); background: var(--primary-soft); border-radius: var(--r-pill); padding: 3px 10px; display: inline-block; margin-top: 8px; }
+.doc-card .avail.none { color: var(--muted); background: #f0f2f1; }
+
+/* 排班日历 */
+.sched-panel { background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 22px; }
+.sched-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.sched-head h2 { font-size: 15px; letter-spacing: 2px; }
+.sched-head .doc-pick { font-size: 13px; color: var(--primary-deep); background: var(--primary-soft); border-radius: var(--r-pill); padding: 5px 14px; }
+.sched-table { width: 100%; border-collapse: separate; border-spacing: 8px 8px; }
+.sched-table th { font-size: 12px; color: var(--muted); font-weight: 400; letter-spacing: 1px; padding: 0 6px; text-align: left; }
+.sched-table td.date-cell { font-family: var(--num); font-size: 13px; color: var(--ink); white-space: nowrap; padding: 0 6px; }
+.slot-chip {
+  display: inline-flex; align-items: center; gap: 8px; border-radius: var(--r-pill);
+  padding: 7px 14px; font-size: 12.5px; cursor: pointer; border: 1.5px solid var(--line); background: #fff;
+  transition: all .15s; margin-right: 6px;
+}
+.slot-chip:hover { border-color: var(--primary); }
+.slot-chip.on { border-color: var(--primary); background: var(--primary-soft); color: var(--primary-deep); font-weight: 600; }
+.slot-chip.full { opacity: .45; cursor: not-allowed; }
+.slot-chip b { font-family: var(--num); }
+
+/* 预约确认弹层 */
+.modal-mask { position: fixed; inset: 0; background: rgba(23,50,41,.35); z-index: 70; display: flex; align-items: center; justify-content: center; }
+.modal {
+  background: var(--card); border-radius: var(--r); width: 400px; max-width: calc(100vw - 40px);
+  padding: 26px 28px; box-shadow: 0 30px 80px rgba(23,50,41,.3);
+}
+.modal h3 { font-size: 17px; margin-bottom: 14px; }
+.modal .row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 9px 0; border-bottom: 1px dashed var(--line); }
+.modal .row b { font-family: var(--num); }
+.modal input {
+  width: 100%; margin-top: 14px; font-size: 14px; border: 1.5px solid var(--line); border-radius: var(--r-sm);
+  padding: 11px 14px; outline: none;
+}
+.modal input:focus { border-color: var(--primary); }
+.modal .tip { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+.modal .btns { display: flex; gap: 10px; margin-top: 18px; }
+button.btn { flex: 1; font-size: 14px; letter-spacing: 2px; cursor: pointer; border-radius: var(--r-sm); padding: 11px 0; border: 1.5px solid var(--primary); transition: all .15s; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-deep); }
+.btn-ghost { background: transparent; color: var(--primary-deep); }
+
+/* 我的预约 */
+.my-bookings { background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 22px; }
+.bk-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 4px; border-bottom: 1px dashed var(--line); font-size: 13.5px; }
+.bk-row:last-child { border-bottom: none; }
+.bk-row .st { font-size: 12px; border-radius: var(--r-pill); padding: 3px 12px; }
+.bk-row .st.ok { color: var(--primary-deep); background: var(--primary-soft); }
+.bk-row .st.cancelled { color: var(--muted); background: #f0f2f1; }
+.bk-row .cancel-btn { font-size: 12px; color: var(--red); background: none; border: 1px solid rgba(201,106,90,.4); border-radius: var(--r-pill); padding: 4px 12px; cursor: pointer; }
+.bk-row .cancel-btn:hover { background: rgba(201,106,90,.08); }
+
+/* toast + AI */
+#toast {
+  position: fixed; top: 18px; left: 50%; transform: translateX(-50%) translateY(-8px);
+  background: var(--ink); color: #fff; font-size: 13px; border-radius: var(--r-pill);
+  padding: 9px 20px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 90;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.ai-fab {
+  position: fixed; right: 26px; bottom: 26px; width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #56c2ab); color: #fff; border: none; cursor: pointer; font-size: 23px;
+  box-shadow: 0 12px 30px rgba(47,164,141,.45); z-index: 50; transition: transform .15s;
+}
+.ai-fab:hover { transform: scale(1.06); }
+.ai-panel {
+  position: fixed; right: 26px; bottom: 96px; width: 400px; max-width: calc(100vw - 40px);
+  height: 560px; max-height: calc(100vh - 140px); background: var(--card);
+  border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow);
+  display: flex; flex-direction: column; z-index: 50; overflow: hidden;
+}
+.ai-head {
+  padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; color: #fff;
+  background: linear-gradient(135deg, var(--primary-deep), var(--primary));
+}
+.ai-head b { font-size: 14px; letter-spacing: 2px; }
+.ai-head span { font-size: 11px; opacity: .8; }
+.ai-head .close { cursor: pointer; font-size: 18px; opacity: .85; background: none; border: none; color: inherit; }
+.ai-msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.msg { max-width: 86%; font-size: 13.5px; line-height: 1.7; border-radius: 20px; padding: 10px 14px; white-space: pre-wrap; word-break: break-word; }
+.msg.user { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 6px; }
+.msg.ai { align-self: flex-start; background: #f0f6f4; border-bottom-left-radius: 6px; }
+.msg.ai.thinking { color: var(--muted); }
+.msg.ai.thinking::after { content: "…"; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100% { opacity: .2; } 50% { opacity: 1; } }
+.msg.ai table { border-collapse: collapse; margin: 8px 0; font-size: 12px; }
+.msg.ai th, .msg.ai td { border: 1px solid var(--line); padding: 4px 8px; }
+.tool-tag { font-size: 11px; color: var(--primary-deep); background: var(--primary-soft); border-radius: var(--r-pill); padding: 2px 10px; align-self: flex-start; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 10px; }
+.chips button {
+  font-size: 12px; border: 1px solid var(--line); background: #fff; color: var(--primary-deep);
+  border-radius: var(--r-pill); padding: 5px 12px; cursor: pointer;
+}
+.chips button:hover { border-color: var(--primary); background: var(--primary-soft); }
+.ai-input { display: flex; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--line); }
+.ai-input textarea {
+  flex: 1; resize: none; font-family: var(--font); font-size: 13.5px; border: 1.5px solid var(--line);
+  border-radius: var(--r-sm); padding: 9px 12px; height: 44px; outline: none; background: #fff;
+}
+.ai-input textarea:focus { border-color: var(--primary); }
+.ai-input button {
+  border: none; background: var(--primary); color: #fff; border-radius: var(--r-sm);
+  padding: 0 18px; cursor: pointer; font-size: 13px; letter-spacing: 2px;
+}
+.ai-input button:disabled { opacity: .5; cursor: default; }
+@media (max-width: 860px) {
+  .dept-grid { grid-template-columns: repeat(3, 1fr); }
+  .doc-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">✚</div>
+      <div><h1>康和门诊</h1><div class="en">Kanghe Clinic · 在线导诊预约</div></div>
+    </div>
+    <span class="disclaimer-pill">⚕ AI 仅导诊 · 不构成诊断</span>
+  </header>
+
+  <div class="notice">
+    <b>⚠️ 免责声明：</b>
+    <span>本页面由 AI 提供<strong>导诊与挂号信息服务</strong>，仅根据症状描述推荐就诊科室，<strong>不构成医学诊断或治疗建议</strong>。急重症（高热不退、胸痛剧烈、大出血、意识模糊等）请立即前往急诊或拨打 120。</span>
+  </div>
+
+  <section>
+    <div class="sec-title">选择科室 <small>点击查看该科室医生</small></div>
+    <div class="dept-grid" id="dept-grid"></div>
+  </section>
+
+  <section>
+    <div class="sec-title">出诊医生 <small id="doc-filter-hint">全部科室</small></div>
+    <div class="doc-grid" id="doc-grid"></div>
+  </section>
+
+  <section class="sched-panel" id="sched-panel" hidden>
+    <div class="sched-head">
+      <h2>排班日历 <small style="color:var(--muted);font-weight:400;letter-spacing:1px;">未来 14 天 · 仅显示有余号时段</small></h2>
+      <span class="doc-pick" id="sched-doc"></span>
+    </div>
+    <table class="sched-table" id="sched-table"></table>
+  </section>
+
+  <section class="my-bookings" id="my-bookings">
+    <div class="sec-title" style="margin-top:0;">我的预约 <small>输入姓名查询</small></div>
+    <div style="display:flex;gap:10px;margin-bottom:6px;">
+      <input id="my-name" placeholder="患者姓名，如：小张" style="flex:none;width:220px;font-size:13.5px;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:9px 14px;outline:none;">
+      <button class="btn btn-primary" style="flex:none;padding:9px 24px;font-size:13px;" onclick="loadBookings()">查询</button>
+    </div>
+    <div id="bk-list"><div style="color:var(--muted);font-size:13px;padding:8px 4px;">输入姓名后查询预约记录</div></div>
+  </section>
+</div>
+
+<button class="ai-fab" onclick="toggleAI()" title="AI 导诊助手">✚</button>
+<div class="ai-panel" id="ai-panel" hidden>
+  <div class="ai-head">
+    <div><b>AI 导诊助手</b><br><span>症状推科室 · 查排班 · 帮约号（不诊断）</span></div>
+    <button class="close" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-msgs" id="ai-msgs">
+    <div class="msg ai">你好，我是康和门诊导诊助手。可以告诉我：<br>·「最近咳嗽还低烧，该挂什么科？」<br>·「呼吸内科最近哪天有号？」<br>·「帮小张约陈志远主任，周三上午」<br><br>注意：我只做导诊，不做诊断哦。</div>
+  </div>
+  <div class="chips">
+    <button onclick="quick(this)">咳嗽三天还低烧，挂什么科？</button>
+    <button onclick="quick(this)">呼吸内科最近有哪个时段有号？</button>
+    <button onclick="quick(this)">小张的病历摘要和过敏史</button>
+  </div>
+  <div class="ai-input">
+    <textarea id="ai-text" placeholder="描述症状或想约的医生…（Enter 发送）"></textarea>
+    <button id="ai-send" onclick="sendMsg()">发送</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<!-- 预约确认弹层 -->
+<div class="modal-mask" id="modal-mask" hidden>
+  <div class="modal">
+    <h3>确认预约信息</h3>
+    <div class="row"><span>医生</span><b id="m-doctor"></b></div>
+    <div class="row"><span>日期</span><b id="m-date"></b></div>
+    <div class="row"><span>时段</span><b id="m-slot"></b></div>
+    <div class="row"><span>挂号费</span><b id="m-fee"></b></div>
+    <input id="m-patient" placeholder="患者姓名（必填）">
+    <div class="tip">提交前请确认信息无误。预约成功后可在下方「我的预约」中查看或取消。AI 导诊不构成诊断意见。</div>
+    <div class="btns">
+      <button class="btn btn-ghost" onclick="closeModal()">再想想</button>
+      <button class="btn btn-primary" onclick="confirmBook()">确认预约</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const fmtFee = n => '¥' + Number(n).toFixed(0);
+const $ = id => document.getElementById(id);
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2200); }
+
+const DEPT_ICONS = {'呼吸内科':'🫁','消化内科':'🍽️','心血管内科':'❤️','骨科':'🦴','皮肤科':'🧴'};
+let curDept = null, curDoctor = null, schedRows = [], pick = null;
+
+// ---- 科室 ----
+async function loadDepts() {
+  const j = await (await fetch('/api/departments')).json();
+  $('dept-grid').innerHTML = (j.data || []).map(d => `
+    <div class="dept-card" data-dept="${d.name}" onclick="pickDept('${d.name}')">
+      <div class="ico">${DEPT_ICONS[d.name] || '🏥'}</div>
+      <div class="nm">${d.name}</div>
+      <div class="fl">${d.floor}</div>
+    </div>`).join('');
+}
+function pickDept(name) {
+  curDept = curDept === name ? null : name;
+  document.querySelectorAll('.dept-card').forEach(el => el.classList.toggle('on', el.dataset.dept === curDept));
+  $('doc-filter-hint').textContent = curDept || '全部科室';
+  loadDocs();
+}
+
+// ---- 医生 ----
+async function loadDocs() {
+  const qs = curDept ? '?department=' + encodeURIComponent(curDept) : '';
+  const j = await (await fetch('/api/doctors' + qs)).json();
+  // 附带余号概览
+  let sched = [];
+  try { sched = (await (await fetch('/api/schedule' + (curDept ? '?department=' + encodeURIComponent(curDept) : ''))).json()).data || []; } catch {}
+  const leftByDoc = {};
+  for (const r of sched) leftByDoc[r.doctorId] = (leftByDoc[r.doctorId] || 0) + r.left;
+  $('doc-grid').innerHTML = (j.data || []).map(d => `
+    <div class="doc-card" data-id="${d.id}" onclick="pickDoc('${d.id}')">
+      <div class="avatar">${DEPT_ICONS[d.department] || '👨‍⚕️'}</div>
+      <h3>${d.name} <span style="font-size:12px;color:var(--primary-deep);font-weight:400;">${d.title}</span></h3>
+      <div class="meta">${d.department}<br>${d.intro}</div>
+      <div class="fee">${fmtFee(d.fee)} <small>/ 号</small></div>
+      <div class="avail ${leftByDoc[d.id] ? '' : 'none'}">${leftByDoc[d.id] ? '未来两周余号 ' + leftByDoc[d.id] + ' 个' : '近期无号'}</div>
+    </div>`).join('');
+}
+function pickDoc(id) {
+  curDoctor = id;
+  document.querySelectorAll('.doc-card').forEach(el => el.classList.toggle('on', el.dataset.id === id));
+  loadSched();
+}
+
+// ---- 排班 ----
+async function loadSched() {
+  const qs = curDoctor ? '?doctorId=' + curDoctor : (curDept ? '?department=' + encodeURIComponent(curDept) : '');
+  const j = await (await fetch('/api/schedule' + qs)).json();
+  schedRows = j.data || [];
+  if (!schedRows.length) { $('sched-panel').hidden = true; toast('该范围暂无余号'); return; }
+  $('sched-panel').hidden = false;
+  $('sched-doc').textContent = curDoctor
+    ? (schedRows[0].doctorName + ' · ' + schedRows[0].title)
+    : (curDept ? curDept + ' · 全部医生' : '全部科室');
+  // 按日期分组
+  const byDate = {};
+  for (const r of schedRows) (byDate[r.date] = byDate[r.date] || []).push(r);
+  const weekday = d => '日一二三四五六'[new Date(d.replace(/-/g,'/')).getDay()];
+  let html = '<tr><th style="width:130px;">日期</th><th>可约时段</th></tr>';
+  for (const [date, rows] of Object.entries(byDate)) {
+    html += `<tr><td class="date-cell">${date.slice(5)} 周${weekday(date)}</td><td>${
+      rows.map(r => `<span class="slot-chip" onclick="pickSlot(this,'${r.doctorId}','${r.doctorName}','${r.title}','${r.department}',${r.fee},'${r.date}','${r.slot}',${r.left})">${r.slot} · 余<b>${r.left}</b> · ${r.doctorName}</span>`).join('')
+    }</td></tr>`;
+  }
+  $('sched-table').innerHTML = html;
+}
+function pickSlot(el, doctorId, doctorName, title, department, fee, date, slot, left) {
+  if (left <= 0) return;
+  pick = { doctorId, doctorName, title, department, fee, date, slot, left };
+  document.querySelectorAll('.slot-chip').forEach(e => e.classList.remove('on'));
+  el.classList.add('on');
+  $('m-doctor').textContent = doctorName + '（' + title + ' · ' + department + '）';
+  $('m-date').textContent = date;
+  $('m-slot').textContent = slot;
+  $('m-fee').textContent = fmtFee(fee);
+  $('m-patient').value = '';
+  $('modal-mask').hidden = false;
+}
+function closeModal() { $('modal-mask').hidden = true; }
+
+async function confirmBook() {
+  const patient = $('m-patient').value.trim();
+  if (!patient) { toast('请填写患者姓名'); return; }
+  try {
+    const r = await fetch('/api/bookings', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patient, doctorId: pick.doctorId, date: pick.date, slot: pick.slot })
+    });
+    const j = await r.json();
+    if (j.code !== 0) { toast(j.message || '预约失败'); return; }
+    closeModal();
+    toast('预约成功！单号 #' + j.data.bookingId);
+    $('my-name').value = patient;
+    loadBookings();
+    loadSched(); loadDocs(); // 刷新余号
+  } catch (e) { toast('预约请求失败：' + e.message); }
+}
+
+// ---- 我的预约 ----
+async function loadBookings() {
+  const patient = $('my-name').value.trim();
+  if (!patient) { toast('请输入患者姓名'); return; }
+  const j = await (await fetch('/api/bookings?patient=' + encodeURIComponent(patient))).json();
+  const rows = j.data || [];
+  if (!rows.length) { $('bk-list').innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 4px;">「' + patient + '」暂无预约记录</div>'; return; }
+  $('bk-list').innerHTML = rows.map(b => `
+    <div class="bk-row">
+      <span>#${b.bookingId} · ${b.doctorName}（${b.department}）</span>
+      <span>${b.date} ${b.slot}</span>
+      <span class="st ${'已预约' === b.status ? 'ok' : 'cancelled'}">${b.status}</span>
+      <span>${'已预约' === b.status ? `<button class="cancel-btn" onclick="cancelBooking(${b.bookingId})">取消</button>` : ''}</span>
+    </div>`).join('');
+}
+async function cancelBooking(id) {
+  const patient = $('my-name').value.trim();
+  if (!confirm('确认取消预约 #' + id + '？')) return;
+  try {
+    const r = await fetch('/api/bookings/' + id + '/cancel', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patient })
+    });
+    const j = await r.json();
+    if (j.code !== 0) { toast(j.message || '取消失败'); return; }
+    toast('已取消 #' + id);
+    loadBookings(); loadSched(); loadDocs();
+  } catch (e) { toast('取消请求失败：' + e.message); }
+}
+
+// ---- AI 面板 ----
+function toggleAI() {
+  const p = $('ai-panel');
+  p.hidden = !p.hidden;
+  if (!p.hidden) $('ai-text').focus();
+}
+function quick(btn) { $('ai-text').value = btn.textContent; sendMsg(); }
+
+function renderMd(el, text) {
+  let html = text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  const lines = html.split('\n');
+  let out = '', inTbl = false;
+  for (const line of lines) {
+    if (/^\s*\|.*\|\s*$/.test(line)) {
+      const cells = line.trim().replace(/^\||\|$/g, '').split('|').map(s => s.trim());
+      if (/^[\s:|-]+$/.test(line)) continue;
+      if (!inTbl) { out += '<table>'; inTbl = true; }
+      out += '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
+    } else {
+      if (inTbl) { out += '</table>'; inTbl = false; }
+      out += line + '\n';
+    }
+  }
+  if (inTbl) out += '</table>';
+  el.innerHTML = out.trim().replace(/\n/g, '<br>');
+}
+
+let sending = false;
+async function sendMsg() {
+  if (sending) return;
+  const text = $('ai-text').value.trim();
+  if (!text) return;
+  $('ai-text').value = '';
+  addMsg('user', text);
+  sending = true; $('ai-send').disabled = true;
+  const think = addMsg('ai', '思考中');
+  think.classList.add('thinking');
+  let aiEl = null;
+  try {
+    const resp = await fetch('/api/assistant/stream', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    const onDelta = t => {
+      if (!aiEl) { think.classList.remove('thinking'); think.textContent = ''; aiEl = think; }
+      aiEl._raw = (aiEl._raw || '') + t;
+      renderMd(aiEl, aiEl._raw);
+      aiMsgsScroll();
+    };
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let idx;
+      while ((idx = buf.indexOf('\n\n')) >= 0) {
+        const chunk = buf.slice(0, idx); buf = buf.slice(idx + 2);
+        let event = 'message', dataLines = [];
+        for (const line of chunk.split('\n')) {
+          if (line.startsWith('event:')) event = line.slice(6).trim();
+          else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
+        }
+        const dataStr = dataLines.join('\n');
+        if (!dataStr) continue;
+        let j; try { j = JSON.parse(dataStr); } catch { continue; }
+        if (event === 'tool' || j.type === 'tool_call' || j.tool) {
+          const name = j.tool || j.name || j.toolName || '';
+          if (name) { addToolTag(name); aiMsgsScroll(); }
+        } else if (event === 'chunk' || event === 'delta' || j.type === 'delta') {
+          onDelta(j.content || j.delta || j.text || '');
+        } else if (event === 'error') {
+          think.classList.remove('thinking');
+          if (!aiEl) { think.textContent = ''; aiEl = think; }
+          aiEl._raw = (aiEl._raw || '') + (j.message || j.error || '服务异常');
+          renderMd(aiEl, aiEl._raw);
+        }
+      }
+    }
+    if (!aiEl) { think.classList.remove('thinking'); think.textContent = '（本轮无内容返回）'; }
+  } catch (e) {
+    think.classList.remove('thinking');
+    think.textContent = '连接失败：' + e.message;
+  } finally {
+    sending = false; $('ai-send').disabled = false;
+    aiMsgsScroll();
+  }
+}
+function addMsg(role, text) {
+  const el = document.createElement('div');
+  el.className = 'msg ' + role;
+  if (role === 'ai') renderMd(el, text); else el.textContent = text;
+  $('ai-msgs').appendChild(el);
+  aiMsgsScroll();
+  return el;
+}
+function addToolTag(name) {
+  const el = document.createElement('div');
+  el.className = 'tool-tag';
+  el.textContent = '⚒ ' + name.replace(/^plugin__[^_]+__/, '');
+  $('ai-msgs').appendChild(el);
+  return el;
+}
+function aiMsgsScroll() { const m = $('ai-msgs'); m.scrollTop = m.scrollHeight; }
+$('ai-text').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
+
+loadDepts();
+loadDocs();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+server:
+  port: 18085
+
+spring:
+  application:
+    name: clinic-app
+
+clinic:
+  assistant:
+    # 验证阶段指向远程 DSH；本地完整验证时可改回 http://127.0.0.1:8090
+    harness-base-url: http://81.70.245.73:8090
+    agent-id: clinic-guide-assistant
